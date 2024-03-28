@@ -5,7 +5,7 @@ import pygame
 
 from pygame.locals import K_UP, K_DOWN, K_LEFT, K_RIGHT
 from pict import *
-from const import RED, GREEN, DECELERATION, ACCELERATION, WIDTH, BROWN, LIGHTBLUE
+from const import RED, DECELERATION, ACCELERATION, WIDTH, BROWN, YELLOW
 
 all_sprites = pygame.sprite.Group()
 rocks = pygame.sprite.Group()
@@ -38,7 +38,6 @@ class Rock(Ball):
         self.mask = pygame.mask.from_surface(self.image)
         self.add(rocks)
 
-
     # def paint(self):
     #     self.color = (
     #         random.randint(50, 60), random.randint(30, 50),
@@ -54,13 +53,16 @@ class Fish(Ball):
         self.speedy = random.randint(-4, 4)
         self.acceleration = ACCELERATION
         self.deceleration = DECELERATION
+        self.fish_image = draw_fish(*self.set_size_color())
+        self.add(fishes)
+
+    def set_size_color(self):
         size = self.image.get_rect().width
         color1 = (random.randint(150, 250), random.randint(50, 200),
                   random.randint(50, 150))
         color2 = (random.randint(0, 50), random.randint(200, 250),
                   random.randint(100, 250))
-        self.fish_image = draw_fish(size, color1, color2)
-        self.add(fishes)
+        return size, color1, color2
 
     def additional_check(self):
         small = []
@@ -136,6 +138,7 @@ class Fish(Ball):
         self.additional_check()
         r, alpha = cart2pol(self.speedx, self.speedy)
         self.image = rotate_fish(self.fish_image, alpha)
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.rect.move(self.speedx, self.speedy)
         self.handle_collisions()
         self.accelerate()
@@ -147,6 +150,12 @@ class Fish(Ball):
 class Player(Fish):
     def __init__(self, x, y, radius):
         super().__init__(x, y, radius)
+
+    def set_size_color(self):
+        size = self.image.get_rect().width
+        color1 = RED
+        color2 = YELLOW
+        return size, color1, color2
 
     def additional_check(self):
         # super().additional_check()
@@ -171,7 +180,9 @@ class Player(Fish):
                                                        pygame.sprite.collide_mask)
         if contacted_fishes:
             for fish in contacted_fishes:
-                fish.kill()
+                if fish is not self:
+                    fish.kill()
+                    self.fish_image = draw_fish(self.image.get_rect().width * 1.1, RED, YELLOW)
 
 
 class Fry(Fish):
