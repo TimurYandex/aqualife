@@ -3,7 +3,7 @@ import random
 import pygame
 from pygame.locals import QUIT, KEYDOWN
 
-from const import WIDTH, HEIGHT, FISH_START_SIZE,PINK
+from const import WIDTH, HEIGHT, FISH_START_SIZE,PINK,LIGHTBLUE
 from fish import Player, Fish, Rock, all_sprites
 
 # Создание экрана
@@ -70,7 +70,7 @@ while running:
     all_sprites.update()
 
     # Отрисовка изменений
-    screen.fill(PINK)
+    screen.fill(LIGHTBLUE)
     all_sprites.draw(screen)
     pygame.display.flip()
     clock.tick(FPS)
