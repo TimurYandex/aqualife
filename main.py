@@ -19,10 +19,10 @@ player = Player(screen.get_rect().centerx, screen.get_rect().centery, FISH_START
 
 # Загрузка уровня ??
 
-for i in range(1,20):
+for i in range(1,10):
     x = random.randint(0, WIDTH)
     y = random.randint(0, HEIGHT)
-    radius = random.randint(FISH_START_SIZE//2, FISH_START_SIZE)
+    radius = random.randint(FISH_START_SIZE//2, 2*FISH_START_SIZE)
     Fish(x, y, radius)
 
 
