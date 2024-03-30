@@ -1,13 +1,13 @@
 import random
 from pygame import mixer
-from fish import Player, Fish, Rock, Ball
+from fish import Player, Fish, Rock, Fry
 import pygame
 from const import WIDTH, HEIGHT, FISH_START_SIZE, PINK, LIGHTBLUE, LEVEL1
 from sprite_groups import SpriteGroups
 from funcs import generate_rock_positions
 
 groups = SpriteGroups()
-all_sprites, rocks, fishes, player = groups.get_groups()
+all_sprites, rocks, fishes, player, fries= groups.get_groups()
 
 
 class Game:
@@ -27,8 +27,6 @@ class Game:
         mixer.music.set_volume(0.1)
         mixer.music.play(loops=-1)
 
-    def stop_ambient_music(self):
-        self.ambient_channel.stop()
 
     def load_level(self, level_select):
         # Загрузка уровня из файла
@@ -37,22 +35,26 @@ class Game:
             if level["name"] == level_select.selected_level:
                 fish_num = level["fish"]
                 max_fish_size = level["size"]
-                # fry_num = level["fry"]
-                # velocity = level["velocity"]
+                fry_num = level["fry"]
+                velocity = level["velocity"]
 
         # Создание спрайтов рыб и камней на основе данных уровня
+        if fry_num:
+            for i in range(fry_num):
+                Fry(200, 100+10*i, 0, velocity)
+
         for i in range(1, fish_num):
             x = random.randint(0, WIDTH)
             y = random.randint(0, HEIGHT)
             radius = random.randint(FISH_START_SIZE // 3,
                                     max_fish_size * FISH_START_SIZE)
-            Fish(x, y, radius)
+            Fish(x, y, radius, velocity)
         rock_position = generate_rock_positions(WIDTH, HEIGHT)
         for pos in rock_position:
             Rock(*pos)
 
         # Создание игрока
-        Player(WIDTH / 2, HEIGHT / 2, FISH_START_SIZE)
+        Player(WIDTH / 2, HEIGHT / 2, FISH_START_SIZE,velocity)
 
 
     def handle_event(self, event):

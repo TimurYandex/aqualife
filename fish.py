@@ -4,13 +4,14 @@ from funcs import cart2pol, pol2cart, generate_color
 from pygame.locals import K_UP, K_DOWN, K_LEFT, K_RIGHT
 from pygame.math import Vector2
 from pict import *
-from const import RED, DECELERATION, ACCELERATION, WIDTH, MAX_SPEED, MIN_SPEED
+from const import RED, DECELERATION, ACCELERATION, MAX_SPEED, MIN_SPEED, \
+    FRY_START_SIZE
 from sprite_groups import SpriteGroups
 from pygame import mixer
-from pygame import mixer_music
+
 
 groups = SpriteGroups()
-all_sprites, rocks, fishes, player = groups.get_groups()
+all_sprites, rocks, fishes, player, fries = groups.get_groups()
 
 
 class Ball(pygame.sprite.Sprite):
@@ -69,7 +70,7 @@ class Rock(Ball):
 
 
 class Fish(Ball):
-    def __init__(self, x, y, radius):
+    def __init__(self, x, y, radius, velocity):
         super().__init__(x, y, radius)
         self.acceleration = ACCELERATION
         self.deceleration = DECELERATION
@@ -83,7 +84,7 @@ class Fish(Ball):
         # Сигналы для звуков
         self.hit_sound_signal = False
         self.eat_sound_signal = False
-
+        self.velocity = velocity
 
     def draw(self):
         self.fish_image = draw_fish(self._size, self.color)
@@ -102,8 +103,8 @@ class Fish(Ball):
             self._speed = MIN_SPEED * Vector2(random.random(),
                                               random.random()).normalize()
 
-        if self._speed.length() > MAX_SPEED:
-            self._speed.scale_to_length(MAX_SPEED)
+        if self._speed.length() > MAX_SPEED * self.velocity:
+            self._speed.scale_to_length(MAX_SPEED * self.velocity)
 
     def behavior(self):
         small = []
@@ -128,11 +129,14 @@ class Fish(Ball):
                 k /= 2
 
     def decelerate(self):
-        self.speed /= (1 + self.speed.length() * self.deceleration)
+        self.speed /= (
+                1 + self.speed.length() * self.deceleration /
+                self.velocity)
 
     def accelerate(self):
         try:
-            self.speed = self.speed.slerp(self.fear + self.greed, 0.03)
+            self.speed = self.speed.slerp(self.fear + self.greed,
+                                          0.03 * self.velocity)
         except ValueError:
             self.speed *= 1.01
         ...
@@ -185,8 +189,8 @@ class Fish(Ball):
 
 
 class Player(Fish):
-    def __init__(self, x, y, radius):
-        super().__init__(x, y, radius)
+    def __init__(self, x, y, radius, velocity):
+        super().__init__(x, y, radius, velocity)
         self._color = generate_color("player")
         self.draw()
         player.add(self)
@@ -199,8 +203,6 @@ class Player(Fish):
         self.ambient_channel = mixer.find_channel(True)
         self.ambient_sound.set_volume(0.3)
         self.ambient_channel.play(self.ambient_sound, loops=-1)
-
-
 
     def behavior(self):
         keys = pygame.key.get_pressed()
@@ -227,7 +229,50 @@ class Player(Fish):
 
 
 class Fry(Fish):
+    def __init__(self, x, y, radius, velocity):
+        super().__init__(x, y, FRY_START_SIZE, velocity)
+        self._color = generate_color("player")
+        self.draw()
+
     pass
+
+    def behavior(self):
+        small = []
+        big = []
+        self.greed = self.fear = Vector2()
+        for fish in fishes:
+            if fish != self and fish not in fries:
+                direction = Vector2(fish.position) - Vector2(self.position)
+                if fish.size > self.size:
+                    big.append(direction)
+                else:
+                    small.append(direction)
+        if small:
+            k = 1
+            for tasty in sorted(small, key=lambda x: x.length())[:3]:
+                self.greed += k * tasty.normalize()
+                k /= 2
+        if big:
+            k = 1
+            for scare in sorted(big, key=lambda x: x.length())[:3]:
+                self.fear -= k * scare.normalize()
+                k /= 2
+
+    def accelerate(self):
+        try:
+            self.speed = self.speed.slerp(2 * self.fear + self.greed, 0.03 * self.velocity)
+        except ValueError:
+            self.speed *= 1.01
+        ...
+
+    def fish_collisions(self):
+        # contacted_fishes = pygame.sprite.spritecollide(self, fishes, False,
+        #                                                pygame.sprite.collide_mask)
+        # if contacted_fishes:
+        #     for fish in contacted_fishes:
+        #         if fish != self and self.size < fish.size:
+        #             self.kill()
+        ...
 
 
 class Enemy(Fish):
