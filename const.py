@@ -3,6 +3,10 @@ WIDTH, HEIGHT = 1800, 1000
 FISH_START_SIZE = 40
 FRY_START_SIZE = 5
 
+# Скорости
+MAX_SPEED = 4
+MIN_SPEED = 0.5
+
 # Цвета
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)

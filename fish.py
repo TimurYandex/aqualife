@@ -1,11 +1,10 @@
 import random
-from funcs import cart2pol, pol2cart
 
-import pygame
-
+from funcs import cart2pol, pol2cart, generate_color
 from pygame.locals import K_UP, K_DOWN, K_LEFT, K_RIGHT
+from pygame.math import Vector2
 from pict import *
-from const import RED, DECELERATION, ACCELERATION, WIDTH, BROWN, YELLOW
+from const import RED, DECELERATION, ACCELERATION, WIDTH, MAX_SPEED, MIN_SPEED
 
 all_sprites = pygame.sprite.Group()
 rocks = pygame.sprite.Group()
@@ -17,172 +16,182 @@ class Ball(pygame.sprite.Sprite):
         super().__init__(all_sprites)
         self.image = pygame.Surface((2 * radius, 2 * radius),
                                     pygame.SRCALPHA, 32)
-        self.color = RED
-        pygame.draw.circle(self.image, self.color, (radius, radius),
-                           radius)
-        self.rect = self.image.get_rect()
-        self.rect.center = (x, y)
+        self.rect = pygame.Rect((0, 0), (2 * radius, 2 * radius))
         self.mask = pygame.mask.from_surface(self.image)
+        self._color = generate_color()
+        self._position = Vector2(x, y)
+        self._size = 2 * radius
+        self.draw()
+        self.position = self._position
+
+    def draw(self):
+        radius = self._size / 2
+        pygame.draw.circle(self.image, self.color[0], (radius, radius), radius)
+        self.mask = pygame.mask.from_surface(self.image)
+
+    @property
+    def position(self):
+        return self._position
+
+    @position.setter
+    def position(self, new_position):
+        self._position = new_position
+        self.rect.center = new_position
+
+    @property
+    def color(self):
+        return self._color
+
+    @color.setter
+    def color(self, new_color):
+        self._color = new_color
+        self.draw()
+
+    @property
+    def size(self):
+        return self._size
+
+    @size.setter
+    def size(self, new_size):
+        self._size = new_size
+        self.draw()
+        self.rect = self.image.get_rect()
+        self.rect.center = self._position
 
 
 class Rock(Ball):
     def __init__(self, x, y, radius):
         super().__init__(x, y, radius)
-        self.image = pygame.Surface((2 * radius, 2 * radius),
-                                    pygame.SRCALPHA, 32)
-        self.color = BROWN
-        pygame.draw.circle(self.image, self.color, (radius, radius),
-                           radius)
-        self.rect = self.image.get_rect()
-        self.rect.center = (x, y)
-        self.mask = pygame.mask.from_surface(self.image)
+        self.color = generate_color("rock")
         self.add(rocks)
-
-    # def paint(self):
-    #     self.color = (
-    #         random.randint(50, 60), random.randint(30, 50),
-    #         random.randint(5, 25))
-    #     pygame.draw.circle(self.image, self.color, self.rect.size,
-    #                        self.rect.width / 2)
 
 
 class Fish(Ball):
     def __init__(self, x, y, radius):
         super().__init__(x, y, radius)
-        self.speedx = random.randint(-4, 4)
-        self.speedy = random.randint(-4, 4)
         self.acceleration = ACCELERATION
         self.deceleration = DECELERATION
-        self.fish_image = draw_fish(*self.set_size_color())
+        self._color = generate_color("fish")
+        self.fish_image = draw_fish(2 * radius, self._color)
+        self._speed = Vector2()
+        self.fear = Vector2()
+        self.greed = Vector2()
         self.add(fishes)
 
-    def set_size_color(self):
-        size = self.image.get_rect().width
-        color1 = (random.randint(150, 250), random.randint(50, 200),
-                  random.randint(50, 150))
-        color2 = (random.randint(0, 50), random.randint(200, 250),
-                  random.randint(100, 250))
-        return size, color1, color2
+    def draw(self):
+        self.fish_image = draw_fish(self._size, self.color)
+
+    @property
+    def speed(self):
+        return self._speed
+
+    @speed.setter
+    def speed(self, new_speed):
+        if isinstance(new_speed, Vector2):
+            self._speed = new_speed
+        else:
+            raise ValueError("Speed must be a pygame.math.Vector2 instance")
+        if self._speed.length() < self._speed.epsilon:
+            self._speed = MIN_SPEED * Vector2(random.random(),
+                                              random.random()).normalize()
+
+        if self._speed.length() > MAX_SPEED:
+            self._speed.scale_to_length(MAX_SPEED)
 
     def additional_check(self):
         small = []
         big = []
+        self.greed = self.fear = Vector2()
         for fish in fishes:
-            if fish is not self:
-                direction = pygame.math.Vector2(
-                        fish.rect.center) - pygame.math.Vector2(
-                        self.rect.center)
-                dir = (
-                    direction.x ** 2 + direction.y ** 2, direction.x,
-                    direction.y)
-                if dir[0] < (2 * WIDTH // 3) ** 2:
-                    if fish.rect.size >= self.rect.size:
-                        big.append(dir)
-                    else:
-                        small.append(dir)
-
+            if fish != self:
+                direction = Vector2(fish.position) - Vector2(self.position)
+                if fish.size >= self.size:
+                    big.append(direction)
+                else:
+                    small.append(direction)
         if small:
-            smallest = min(small)
-            self.come(pygame.math.Vector2(smallest[1:]))
+            for tasty in sorted(small, key=lambda x: x.length())[:3]:
+                self.greed += tasty.normalize()
         if big:
-            biggest = min(big)
-            self.run(pygame.math.Vector2(biggest[1:]))
+            for scare in sorted(big, key=lambda x: x.length())[:3]:
+                self.fear -= scare.normalize()
         ...
 
-    def run(self, angry):
-        if angry:
-            angry.normalize_ip()
-        self.speedx -= self.acceleration * angry[0]
-        self.speedy -= self.acceleration * angry[1]
-        ...
-
-    def come(self, tasty):
-        if tasty:
-            tasty.normalize_ip()
-        self.speedx += self.acceleration * tasty[0]
-        self.speedy += self.acceleration * tasty[1]
-        ...
-
-    def handle_collisions(self):
+    def rock_collisions(self):
         collided_rocks = pygame.sprite.spritecollide(self, rocks, False,
                                                      pygame.sprite.collide_mask)
         if collided_rocks:
+            bounce_vector = Vector2()
             for rock in collided_rocks:
                 # Вычисляем вектор отскока
-                bounce_vector = pygame.math.Vector2(
-                        self.rect.center) - pygame.math.Vector2(
-                        rock.rect.center)
-                bounce_vector.normalize_ip()
+                bounce = Vector2(self.position) - Vector2(rock.position)
+                bounce.normalize_ip()
+                bounce_vector += bounce
+                # выходим немножко из всех камней
+                self.position += bounce
 
-                # Изменяем вектор скорости рыбки
-                self.speedx = bounce_vector.x * abs(
-                        self.speedx) + self.speedx * (0.1 + random.random())
-                self.speedy = bounce_vector.y * abs(
-                        self.speedy) + self.speedy * (0.1 + random.random())
+            # Вычисляем величину проекции скорости на нормаль
+            speed_norm = abs(self.speed.dot(bounce_vector))
+
+            # Обновляем скорость рыбки для отражения
+            self.speed += 2 * speed_norm * bounce_vector
+
+    def fish_collisions(self):
+        contacted_fishes = pygame.sprite.spritecollide(self, fishes, False,
+                                                       pygame.sprite.collide_mask)
+        if contacted_fishes:
+            for fish in contacted_fishes:
+                if fish != self and self.size >= fish.size:
+                    fish.kill()
+                    self.size *= 1.1
+
+    def handle_collisions(self):
+        self.rock_collisions()
+        self.fish_collisions()
 
     def decelerate(self):
-        speed_x2 = self.speedx ** 2
-        speed_y2 = self.speedy ** 2
-        speed = math.sqrt(speed_x2 + speed_y2) * self.deceleration
-        self.speedx -= self.speedx * speed / (speed + 1)
-        self.speedy -= self.speedy * speed / (speed + 1)
+        self.speed /= (1 + self.speed.length() * self.deceleration)
 
     def accelerate(self):
-        k = 4 if self.speedx ** 2 + self.speedy ** 2 < 2 else 1
-        self.speedx += random.randint(-k, k) * self.acceleration
-        self.speedy += random.randint(-k, k) * self.acceleration
+        try:
+            self.speed = self.speed.slerp(self.fear + self.greed, 0.02)
+        except ValueError:
+            self.speed *= 1.01
         ...
 
     def update(self):
         self.decelerate()
+        self.accelerate()
+        self.handle_collisions()
         self.additional_check()
-        r, alpha = cart2pol(self.speedx, self.speedy)
+        r, alpha = cart2pol(self.speed.x, self.speed.y)
         self.image = rotate_fish(self.fish_image, alpha)
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect = self.rect.move(self.speedx, self.speedy)
-        self.handle_collisions()
-        self.accelerate()
-
-        # Здесь вы можете добавить логику ограничения рыбки в пределах
-        # игрового мира
+        self.position += self.speed
 
 
 class Player(Fish):
     def __init__(self, x, y, radius):
         super().__init__(x, y, radius)
-
-    def set_size_color(self):
-        size = self.image.get_rect().width
-        color1 = RED
-        color2 = YELLOW
-        return size, color1, color2
+        self._color = generate_color("player")
+        self.draw()
 
     def additional_check(self):
-        # super().additional_check()
-        # Обработка замедления
-        self.decelerate()
         keys = pygame.key.get_pressed()
         if keys[K_UP]:
-            self.speedy -= self.acceleration
+            self.speed.y -= self.acceleration
         if keys[K_DOWN]:
-            self.speedy += self.acceleration
+            self.speed.y += self.acceleration
         if keys[K_LEFT]:
-            self.speedx -= self.acceleration
+            self.speed.x -= self.acceleration
         if keys[K_RIGHT]:
-            self.speedx += self.acceleration
+            self.speed.x += self.acceleration
 
     def accelerate(self):
         ...
 
     def handle_collisions(self):
         super().handle_collisions()
-        contacted_fishes = pygame.sprite.spritecollide(self, fishes, False,
-                                                       pygame.sprite.collide_mask)
-        if contacted_fishes:
-            for fish in contacted_fishes:
-                if fish is not self:
-                    fish.kill()
-                    self.fish_image = draw_fish(self.image.get_rect().width * 1.1, RED, YELLOW)
 
 
 class Fry(Fish):

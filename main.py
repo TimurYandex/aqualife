@@ -4,7 +4,7 @@ import pygame
 from pygame.locals import QUIT, KEYDOWN, RESIZABLE,VIDEORESIZE
 
 from const import WIDTH, HEIGHT, FISH_START_SIZE,PINK,LIGHTBLUE
-from fish import Player, Fish, Rock, all_sprites
+from fish import Player, Fish, Rock, Ball, all_sprites
 
 # Создание экрана
 pygame.init()
@@ -13,16 +13,19 @@ size = width, height = WIDTH, HEIGHT
 screen = pygame.display.set_mode(size, RESIZABLE)
 # Установка FPS
 FPS = 100
+
+
 # Создание игрока
 player = Player(screen.get_rect().centerx, screen.get_rect().centery, FISH_START_SIZE)
 
+# Fish(200, 200, FISH_START_SIZE/2)
 
-# Загрузка уровня ??
+
 
 for i in range(1,20):
     x = random.randint(0, WIDTH)
     y = random.randint(0, HEIGHT)
-    radius = random.randint(FISH_START_SIZE//2, 2*FISH_START_SIZE)
+    radius = random.randint(FISH_START_SIZE//3, 1.1*FISH_START_SIZE)
     Fish(x, y, radius)
 
 
@@ -69,7 +72,6 @@ while running:
             screen_width, screen_height = event.size
             screen = pygame.display.set_mode((screen_width, screen_height),
                                              RESIZABLE)
-            # Обновите игровые объекты и отрендерите их на новом экране
 
     # Обновление всех спрайтов
     all_sprites.update()

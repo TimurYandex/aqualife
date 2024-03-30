@@ -8,27 +8,28 @@ from const import WHITE
 # отдельно, но он предназначен для импорта двух функций
 
 
-def draw_fish(size, color1, color2):
-    size12 = size / 12
+def draw_fish(width, color):
+    color1, color2 = color
+    size12 = width / 12
     circle_radius = 8 * size12
     circle1_pos = (0, -2 * size12)
-    circle2_pos = (size, -2 * size12)
+    circle2_pos = (width, -2 * size12)
     circle5_pos = (6 * size12, -7 * size12)
     circle3_pos = (3 * size12, 6 * size12)
     circle4_pos = (9 * size12, 6 * size12)
     circle6_pos = (7 * size12, 8 * size12)
     # Создаем поверхности для кругов
-    circle1 = pygame.Surface((size, size), pygame.SRCALPHA)
-    circle2 = pygame.Surface((size, size), pygame.SRCALPHA)
-    circle3 = pygame.Surface((size, size), pygame.SRCALPHA)
-    circle4 = pygame.Surface((size, size), pygame.SRCALPHA)
-    circle5 = pygame.Surface((size, size), pygame.SRCALPHA)
-    circle6 = pygame.Surface((size, size), pygame.SRCALPHA)
+    circle1 = pygame.Surface((width, width), pygame.SRCALPHA)
+    circle2 = pygame.Surface((width, width), pygame.SRCALPHA)
+    circle3 = pygame.Surface((width, width), pygame.SRCALPHA)
+    circle4 = pygame.Surface((width, width), pygame.SRCALPHA)
+    circle5 = pygame.Surface((width, width), pygame.SRCALPHA)
+    circle6 = pygame.Surface((width, width), pygame.SRCALPHA)
     # хвостик
     pygame.draw.circle(circle1, color2, circle1_pos, circle_radius)
     pygame.draw.circle(circle2, WHITE, circle2_pos, circle_radius)
     pygame.draw.circle(circle5, WHITE, circle5_pos, circle_radius)
-    tail_surface = pygame.Surface((size, size), pygame.SRCALPHA)
+    tail_surface = pygame.Surface((width, width), pygame.SRCALPHA)
     tail_surface.blit(circle1, (0, 0))
     tail_surface.blit(circle2, (0, 0), None,
                       special_flags=pygame.BLEND_RGBA_MULT)
@@ -37,17 +38,17 @@ def draw_fish(size, color1, color2):
     # тело
     pygame.draw.circle(circle3, color1, circle3_pos, 2 * circle_radius / 3)
     pygame.draw.circle(circle4, WHITE, circle4_pos, 2 * circle_radius / 3)
-    body_surface = pygame.Surface((size, size), pygame.SRCALPHA)
+    body_surface = pygame.Surface((width, width), pygame.SRCALPHA)
     body_surface.blit(circle3, (0, 0))
     body_surface.blit(circle4, (0, 0), None,
                       special_flags=pygame.BLEND_RGBA_MULT)
 
     # рыбка
-    fish_surface = pygame.Surface((size, size), pygame.SRCALPHA)
+    fish_surface = pygame.Surface((width, width), pygame.SRCALPHA)
     # fish_surface.fill("green")
-    fish_surface.blit(tail_surface, (0, 0))
-    fish_surface.blit(tail_surface, (2 * size12, 4 * size12))
-    fish_surface.blit(body_surface, (0, 0))
+    fish_surface.blit(tail_surface, (0, size12))
+    fish_surface.blit(tail_surface, (2 * size12, 4 * size12 + size12))
+    fish_surface.blit(body_surface, (0, size12))
 
     # глаз
     pygame.draw.circle(fish_surface, "white", circle6_pos, circle_radius / 15)
@@ -84,23 +85,22 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode(SIZE)
     clock = pygame.time.Clock()
 
-    fish_surface = draw_fish(250, (100, 150, 180), (200, 50, 80))
+    fish_surface = draw_fish(350, ((100, 150, 180), (200, 50, 80)))
 
     running = True
-    alpha = 0
+    alph = 0
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
         screen.fill(BLACK)
-        alpha += 5
-        # alpha = 45
-        a_fish = rotate_fish(fish_surface, alpha)
+        alph += 5
+        a_fish = rotate_fish(fish_surface, alph)
         screen.blit(a_fish, (SIZE[0] // 4, SIZE[0] // 4))
 
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(1)
 
     pygame.quit()
     sys.exit()
