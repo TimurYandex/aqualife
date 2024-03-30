@@ -1,28 +1,28 @@
 {
-  "levels": [
-    {
-      "name": "1: Останься!",
-      "completed": true,
-      "fish": 20,
-      "size": 1.1,
-      "fry": 0,
-      "velocity": 1
-    },
-    {
-      "name": "2: Проживи 20 секунд!",
-      "completed": false,
-      "fish": 40,
-      "size": 2,
-      "fry": 0,
-      "velocity": 2
-    },
-    {
-      "name": "3: Защити мальков 20 секунд!",
-      "completed": false,
-      "fish": 30,
-      "size": 1.5,
-      "fry": 5,
-      "velocity": 2
-    }
-  ]
+    "levels": [
+        {
+            "name": "1: Останься последней рыбкой!",
+            "completed": true,
+            "fish": 20,
+            "size": 1.1,
+            "fry": 0,
+            "velocity": 1
+        },
+        {
+            "name": "2: Проживи 20 секунд!",
+            "completed": false,
+            "fish": 40,
+            "size": 2,
+            "fry": 0,
+            "velocity": 2
+        },
+        {
+            "name": "3: Защити мальков 20 секунд!",
+            "completed": false,
+            "fish": 30,
+            "size": 1.5,
+            "fry": 5,
+            "velocity": 2
+        }
+    ]
 }

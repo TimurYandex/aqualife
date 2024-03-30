@@ -1,6 +1,7 @@
 import sys
 import random
 import pygame
+from pygame import mixer
 from pygame.locals import QUIT, KEYDOWN, RESIZABLE, VIDEORESIZE
 from const import WIDTH, HEIGHT, FISH_START_SIZE, PINK, LIGHTBLUE, FPS
 
@@ -13,6 +14,7 @@ from start_screen import StartScreen
 
 def main():
     pygame.init()
+    mixer.init()
     # Установка размеров окна
     size = WIDTH, HEIGHT
     screen = pygame.display.set_mode(size)
@@ -27,6 +29,7 @@ def main():
     # Создание экрана
     current_screen = start_screen
     running = True
+    game_started = False
     while running:
         # Обработка событий
         for event in pygame.event.get():
@@ -64,6 +67,7 @@ def main():
 
         pygame.display.flip()
         clock.tick(FPS)
+    mixer.quit()
     pygame.quit()
     sys.exit()
 

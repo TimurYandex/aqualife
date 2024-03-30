@@ -33,3 +33,31 @@ def generate_color(intention=None):
     return color1, color2
 
 
+def noise(x):
+    return random.random() * x / 30
+
+
+def generate_rock_positions(w, h):
+    s = min(w, h)
+    r1 = s *4/5
+    r2 = s * 4 / 7
+    stones = []
+    for i in (-1, 1):
+        for j in (-1, 1):
+            stones.append((i * (s / 2 + w / 2 + noise(s)) + w / 2,
+                           j * (s / 2 + h / 2 + noise(s)) + h / 2,
+                           r1 + noise(s), ((50 + noise(1000), 50 + noise(1000),
+                                            50 + noise(1000)), BLACK)))
+    for i in (-1, 1):
+        for j in range(1, 5):
+            stones.append((i * (s / 2 + w / 2 + noise(s)) + w / 2,
+                           j * (h / 5 + noise(s)),
+                           r2 + noise(s), ((50 + noise(1000), 50 + noise(1000),
+                                           50 + noise(1000)), BLACK)))
+    for j in (-1, 1):
+        for i in range(1, 5):
+            stones.append((i * (w / 5 + noise(s)),
+                           j * (s / 2 + h / 2 + noise(s)) + h / 2,
+                           r2 + noise(s), ((50 + noise(1000), 50 + noise(1000),
+                                           50 + noise(1000)), BLACK)))
+    return stones

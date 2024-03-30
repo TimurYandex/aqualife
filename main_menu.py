@@ -1,11 +1,12 @@
 import pygame
+from const import WIDTH, HEIGHT
 
 class MainMenu:
     def __init__(self):
         self.font_title = pygame.font.Font(None, 48)
         self.font_text = pygame.font.Font(None, 36)
-        self.start_game_button = pygame.Rect(300, 200, 200, 50)
-        self.quit_button = pygame.Rect(300, 300, 200, 50)
+        self.start_game_button = pygame.Rect(WIDTH/2 - 100, HEIGHT/2 - 50, 200, 50)
+        self.quit_button = pygame.Rect(WIDTH/2 - 100, HEIGHT/2 + 50, 200, 50)
         self.start_game = False
         self.quit_game = False
 
@@ -23,10 +24,10 @@ class MainMenu:
         pass
 
     def draw(self, screen):
-        screen.fill((0, 0, 0))
+        screen.fill((20, 90, 80))
 
         title_text = self.font_title.render("Главное меню", True, (255, 255, 255))
-        title_rect = title_text.get_rect(center=(400, 100))
+        title_rect = title_text.get_rect(center=(WIDTH/2, HEIGHT/2 - 200))
         screen.blit(title_text, title_rect)
 
         pygame.draw.rect(screen, (255, 255, 255), self.start_game_button)
@@ -41,7 +42,7 @@ class MainMenu:
 
 if __name__ == "__main__":
     pygame.init()
-    screen = pygame.display.set_mode((800, 600))
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
 
     main_menu = MainMenu()

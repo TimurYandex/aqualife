@@ -1,11 +1,12 @@
 import pygame
+from const import WIDTH, HEIGHT
 
 
 class GameOver:
     def __init__(self):
         self.font = pygame.font.Font(None, 36)
         self.score = 0
-        self.restart_button = pygame.Rect(300, 400, 200, 50)
+        self.restart_button = pygame.Rect(WIDTH/2-100, HEIGHT/2, 200, 50)
         self.restart = False
 
     def set_score(self, score):
@@ -23,15 +24,15 @@ class GameOver:
         pass
 
     def draw(self, screen):
-        screen.fill((0, 0, 0))
+        screen.fill((10, 50, 40))
 
         game_over_text = self.font.render("Game Over", True, (255, 255, 255))
-        game_over_rect = game_over_text.get_rect(center=(400, 200))
+        game_over_rect = game_over_text.get_rect(center=(WIDTH/2, HEIGHT/2 - 100))
         screen.blit(game_over_text, game_over_rect)
 
         score_text = self.font.render(f"Score: {self.score}", True,
                                       (255, 255, 255))
-        score_rect = score_text.get_rect(center=(400, 300))
+        score_rect = score_text.get_rect(center=(WIDTH/2, HEIGHT/2 + 100))
         screen.blit(score_text, score_rect)
 
         pygame.draw.rect(screen, (255, 255, 255), self.restart_button)
@@ -42,7 +43,7 @@ class GameOver:
 
 if __name__ == "__main__":
     pygame.init()
-    screen = pygame.display.set_mode((800, 600))
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
 
     game_over = GameOver()

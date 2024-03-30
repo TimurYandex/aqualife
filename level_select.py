@@ -1,13 +1,14 @@
 import pygame
 import json
+from const import WIDTH, HEIGHT
 
 
 class LevelSelect:
-    def __init__(self):
+    def __init__(self, default=None):
         self.font = pygame.font.Font(None, 36)
         self.levels = []
         self.load_levels()
-        self.selected_level = None
+        self.selected_level = default
 
     def load_levels(self):
         with open("levels_data.json", "r", encoding='utf8') as file:
@@ -20,7 +21,8 @@ class LevelSelect:
                     "size": level_data["size"],
                     "fry": level_data["fry"],
                     "velocity": level_data["velocity"],
-                    "button": pygame.Rect(100, 100 + len(self.levels) * 100,
+                    "button": pygame.Rect(WIDTH / 2 - 200,
+                                          100 + len(self.levels) * 100,
                                           400, 50)
                 }
                 self.levels.append(level)
@@ -67,7 +69,7 @@ class LevelSelect:
 
 if __name__ == "__main__":
     pygame.init()
-    screen = pygame.display.set_mode((800, 600))
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
 
     level_select = LevelSelect()

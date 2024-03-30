@@ -6,6 +6,8 @@ from pygame.math import Vector2
 from pict import *
 from const import RED, DECELERATION, ACCELERATION, WIDTH, MAX_SPEED, MIN_SPEED
 from sprite_groups import SpriteGroups
+from pygame import mixer
+from pygame import mixer_music
 
 groups = SpriteGroups()
 all_sprites, rocks, fishes, player = groups.get_groups()
@@ -60,9 +62,9 @@ class Ball(pygame.sprite.Sprite):
 
 
 class Rock(Ball):
-    def __init__(self, x, y, radius):
+    def __init__(self, x, y, radius, color):
         super().__init__(x, y, radius)
-        self.color = generate_color("rock")
+        self.color = color
         rocks.add(self)
 
 
@@ -78,6 +80,10 @@ class Fish(Ball):
         self.greed = Vector2()
         self.score = 0
         fishes.add(self)
+        # Сигналы для звуков
+        self.hit_sound_signal = False
+        self.eat_sound_signal = False
+
 
     def draw(self):
         self.fish_image = draw_fish(self._size, self.color)
@@ -149,6 +155,8 @@ class Fish(Ball):
 
             # Обновляем скорость рыбки для отражения
             self.speed += 2 * speed_norm * bounce_vector
+            # Сигнал для звука
+            self.hit_sound_signal = True
 
     def fish_collisions(self):
         contacted_fishes = pygame.sprite.spritecollide(self, fishes, False,
@@ -159,6 +167,7 @@ class Fish(Ball):
                     fish.kill()
                     self.size *= 1.1
                     self.score += 1
+                    self.eat_sound_signal = True
 
     def handle_collisions(self):
         self.rock_collisions()
@@ -181,6 +190,17 @@ class Player(Fish):
         self._color = generate_color("player")
         self.draw()
         player.add(self)
+        # Звуки
+        self.hit_sound = mixer.Sound("./data/Hit.wav")
+        self.death_sound = mixer.Sound("./data/Death.wav")
+        self.eat_sound = mixer.Sound("./data/AIEat.wav")
+        self.win_sound = mixer.Sound("./data/Win.wav")
+        self.ambient_sound = mixer.Sound("./data/Ambient.wav")
+        self.ambient_channel = mixer.find_channel(True)
+        self.ambient_sound.set_volume(0.3)
+        self.ambient_channel.play(self.ambient_sound, loops=-1)
+
+
 
     def behavior(self):
         keys = pygame.key.get_pressed()
@@ -198,6 +218,12 @@ class Player(Fish):
 
     def handle_collisions(self):
         super().handle_collisions()
+        if self.hit_sound_signal:
+            self.hit_sound.play()
+            self.hit_sound_signal = False
+        if self.eat_sound_signal:
+            self.eat_sound.play()
+            self.eat_sound_signal = False
 
 
 class Fry(Fish):

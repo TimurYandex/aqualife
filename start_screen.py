@@ -1,11 +1,11 @@
 import pygame
-
+from const import WIDTH, HEIGHT
 
 class StartScreen:
     def __init__(self):
         self.font_title = pygame.font.Font(None, 48)
         self.font_text = pygame.font.Font(None, 36)
-        self.start_button = pygame.Rect(200, 400, 400, 50)
+        self.start_button = pygame.Rect(WIDTH/2 - 200, HEIGHT/2 + 100, 400, 50)
         self.done = False
 
     def handle_event(self, event):
@@ -20,16 +20,16 @@ class StartScreen:
         pass
 
     def draw(self, screen):
-        screen.fill((0, 0, 0))
+        screen.fill((20, 90, 80))
 
         title_text = self.font_title.render("Рыбки", True, (255, 255, 255))
-        title_rect = title_text.get_rect(center=(400, 200))
+        title_rect = title_text.get_rect(center=(WIDTH/2, HEIGHT/2 - 100))
         screen.blit(title_text, title_rect)
 
         start_text = self.font_text.render(
             "Управление стрелками, Esc - выход в меню", True,
             (255, 255, 255))
-        start_rect = start_text.get_rect(center=(400, 300))
+        start_rect = start_text.get_rect(center=(WIDTH/2, HEIGHT/2))
         screen.blit(start_text, start_rect)
 
         pygame.draw.rect(screen, (255, 255, 255), self.start_button)
@@ -40,7 +40,7 @@ class StartScreen:
 
 if __name__ == "__main__":
     pygame.init()
-    screen = pygame.display.set_mode((800, 600))
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
 
     start_screen = StartScreen()
