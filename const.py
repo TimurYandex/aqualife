@@ -4,8 +4,9 @@ FISH_START_SIZE = 40
 FRY_START_SIZE = 5
 
 # Скорости
-MAX_SPEED = 4
+MAX_SPEED = 6
 MIN_SPEED = 0.5
+FPS = 50
 
 # Цвета
 WHITE = (255, 255, 255)

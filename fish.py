@@ -5,10 +5,10 @@ from pygame.locals import K_UP, K_DOWN, K_LEFT, K_RIGHT
 from pygame.math import Vector2
 from pict import *
 from const import RED, DECELERATION, ACCELERATION, WIDTH, MAX_SPEED, MIN_SPEED
+from sprite_groups import SpriteGroups
 
-all_sprites = pygame.sprite.Group()
-rocks = pygame.sprite.Group()
-fishes = pygame.sprite.Group()
+groups = SpriteGroups()
+all_sprites, rocks, fishes, player = groups.get_groups()
 
 
 class Ball(pygame.sprite.Sprite):
@@ -63,7 +63,7 @@ class Rock(Ball):
     def __init__(self, x, y, radius):
         super().__init__(x, y, radius)
         self.color = generate_color("rock")
-        self.add(rocks)
+        rocks.add(self)
 
 
 class Fish(Ball):
@@ -76,7 +76,8 @@ class Fish(Ball):
         self._speed = Vector2()
         self.fear = Vector2()
         self.greed = Vector2()
-        self.add(fishes)
+        self.score = 0
+        fishes.add(self)
 
     def draw(self):
         self.fish_image = draw_fish(self._size, self.color)
@@ -98,7 +99,7 @@ class Fish(Ball):
         if self._speed.length() > MAX_SPEED:
             self._speed.scale_to_length(MAX_SPEED)
 
-    def additional_check(self):
+    def behavior(self):
         small = []
         big = []
         self.greed = self.fear = Vector2()
@@ -110,11 +111,24 @@ class Fish(Ball):
                 else:
                     small.append(direction)
         if small:
+            k = 1
             for tasty in sorted(small, key=lambda x: x.length())[:3]:
-                self.greed += tasty.normalize()
+                self.greed += k * tasty.normalize()
+                k /= 2
         if big:
+            k = 1
             for scare in sorted(big, key=lambda x: x.length())[:3]:
-                self.fear -= scare.normalize()
+                self.fear -= k * scare.normalize()
+                k /= 2
+
+    def decelerate(self):
+        self.speed /= (1 + self.speed.length() * self.deceleration)
+
+    def accelerate(self):
+        try:
+            self.speed = self.speed.slerp(self.fear + self.greed, 0.03)
+        except ValueError:
+            self.speed *= 1.01
         ...
 
     def rock_collisions(self):
@@ -144,27 +158,18 @@ class Fish(Ball):
                 if fish != self and self.size >= fish.size:
                     fish.kill()
                     self.size *= 1.1
+                    self.score += 1
 
     def handle_collisions(self):
         self.rock_collisions()
         self.fish_collisions()
 
-    def decelerate(self):
-        self.speed /= (1 + self.speed.length() * self.deceleration)
-
-    def accelerate(self):
-        try:
-            self.speed = self.speed.slerp(self.fear + self.greed, 0.02)
-        except ValueError:
-            self.speed *= 1.01
-        ...
-
     def update(self):
         self.decelerate()
         self.accelerate()
         self.handle_collisions()
-        self.additional_check()
-        r, alpha = cart2pol(self.speed.x, self.speed.y)
+        self.behavior()
+        r, alpha = cart2pol(*self.speed)
         self.image = rotate_fish(self.fish_image, alpha)
         self.mask = pygame.mask.from_surface(self.image)
         self.position += self.speed
@@ -175,8 +180,9 @@ class Player(Fish):
         super().__init__(x, y, radius)
         self._color = generate_color("player")
         self.draw()
+        player.add(self)
 
-    def additional_check(self):
+    def behavior(self):
         keys = pygame.key.get_pressed()
         if keys[K_UP]:
             self.speed.y -= self.acceleration
