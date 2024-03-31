@@ -9,6 +9,9 @@ class GameOver:
         self.restart_button = pygame.Rect(WIDTH/2-100, HEIGHT/2, 200, 50)
         self.restart = False
 
+
+
+
     def set_score(self, score):
         self.score = score
 
@@ -19,6 +22,8 @@ class GameOver:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 pygame.event.post(pygame.event.Event(pygame.QUIT))
+            elif event.key == pygame.K_RETURN:
+                self.restart = True
 
     def update(self):
         pass

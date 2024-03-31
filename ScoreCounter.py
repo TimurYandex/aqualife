@@ -33,7 +33,6 @@ class Counter:
         surface.blit(time_text, (200, 10))
         surface.blit(score_text, (surface.get_width() - 200, 10))
 
-
     def get_time(self):
         return (pygame.time.get_ticks() - self.start_time) // 1000
 
@@ -56,7 +55,7 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Мое приложение")
 
-    score_counter = Counter(duration=30)  # Длительность 30 секунд
+    score_counter = Counter(duration=10)
 
     running = True
     while running:
@@ -66,7 +65,7 @@ if __name__ == "__main__":
             score_counter.handle_event(event)
 
         score_counter.update()
-        screen.fill((0,0,0))
+        screen.fill((0, 0, 0))
 
         score_counter.draw(screen)
 

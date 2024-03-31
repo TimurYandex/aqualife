@@ -18,6 +18,7 @@ class Game:
         self.all_sprites = all_sprites
         self.rocks = rocks
         self.fishes = fishes
+        self.fries = fries
         self.score = 0
         self.game_over = False
         self.goto_menu = False
@@ -87,15 +88,20 @@ class Game:
 
     def update(self):
         self.all_sprites.update()
-        if len(player) == 1:
+        if len(player) == 1: # игрок жив
             self.score = player.sprites()[0].score
-        else:
-            self.score = -1
-            self.death_sound.play()
-            self.game_over = True
+            if (len(self.fishes) == 1 # игрок остался совсем один
+                    # или игрок остался только со своими мальками
+                    or len(self.fishes) == len(self.fries) + len(player)):
+                self.win_sound.play()
+                self.game_over = True
+            elif self.counter.is_game_over():
+                self.win_sound.play()
+                self.game_over = True
 
-        if len(self.fishes) == 1:
-            self.win_sound.play()
+        else: # игрок съеден
+            self.score = -100
+            self.death_sound.play()
             self.game_over = True
 
         self.counter.update()
