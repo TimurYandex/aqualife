@@ -51,6 +51,10 @@ def main():
         elif current_screen == level_select and level_select.selected_level:
             game.load_level(level_select)
             current_screen = game
+        elif current_screen == game and game.goto_menu:
+            level_select.selected_level = None
+            game.finalize()
+            current_screen = main_menu
         elif current_screen == game and game.game_over:
             game_over.set_score(game.score)
             if game_over.score > 0:

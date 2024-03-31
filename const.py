@@ -1,3 +1,9 @@
+import pygame
+
+# Собственные события
+EAT_FISH_EVENT = pygame.USEREVENT + 1
+LOSE_FRY_EVENT = pygame.USEREVENT + 2
+
 # Размеры
 WIDTH, HEIGHT = 1400, 1000
 FISH_START_SIZE = 40

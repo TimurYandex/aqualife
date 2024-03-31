@@ -2,12 +2,14 @@ import random
 from pygame import mixer
 from fish import Player, Fish, Rock, Fry
 import pygame
-from const import WIDTH, HEIGHT, FISH_START_SIZE, PINK, LIGHTBLUE, LEVEL1
+from const import WIDTH, HEIGHT, FISH_START_SIZE, PINK, LIGHTBLUE, LEVEL1, \
+    EAT_FISH_EVENT, LOSE_FRY_EVENT
 from sprite_groups import SpriteGroups
-from funcs import generate_rock_positions
+from funcs import generate_rock_positions, generate_fish_fry_positions
+from ScoreCounter import Counter
 
 groups = SpriteGroups()
-all_sprites, rocks, fishes, player, fries= groups.get_groups()
+all_sprites, rocks, fishes, player, fries = groups.get_groups()
 
 
 class Game:
@@ -18,15 +20,29 @@ class Game:
         self.fishes = fishes
         self.score = 0
         self.game_over = False
+        self.goto_menu = False
         self.level = None
         self.start_ambient_music()
+        self.ambient_sound = mixer.Sound("data/sound/Ambient.wav")
+        self.death_sound = mixer.Sound("data/sound/Death.wav")
+        self.win_sound = mixer.Sound("data/sound/Win.wav")
+        self.ambient_channel = mixer.find_channel(True)
+        self.ambient_sound.set_volume(0.3)
+        self.counter = None
 
+    def start_counter(self, duration):
+        self.counter = Counter(duration)
+
+    def start_ambient_sound(self):
+        self.ambient_channel.play(self.ambient_sound, loops=-1)
+
+    def stop_ambient_sound(self):
+        self.ambient_channel.stop()
 
     def start_ambient_music(self):
-        mixer.music.load("./data/guitar1.wav")
+        mixer.music.load("data/sound/guitar1.wav")
         mixer.music.set_volume(0.1)
         mixer.music.play(loops=-1)
-
 
     def load_level(self, level_select):
         # Загрузка уровня из файла
@@ -37,32 +53,37 @@ class Game:
                 max_fish_size = level["size"]
                 fry_num = level["fry"]
                 velocity = level["velocity"]
+                duration = level["duration"]
 
         # Создание спрайтов рыб и камней на основе данных уровня
-        if fry_num:
-            for i in range(fry_num):
-                Fry(200, 100+10*i, 0, velocity)
 
-        for i in range(1, fish_num):
-            x = random.randint(0, WIDTH)
-            y = random.randint(0, HEIGHT)
-            radius = random.randint(FISH_START_SIZE // 3,
+        fish_positions, fry_positions = generate_fish_fry_positions(WIDTH,
+                                                                    HEIGHT,
+                                                                    fry_num,
+                                                                    fish_num)
+        for pos in fish_positions:
+            radius = random.randint(FISH_START_SIZE // 2,
                                     max_fish_size * FISH_START_SIZE)
-            Fish(x, y, radius, velocity)
-        rock_position = generate_rock_positions(WIDTH, HEIGHT)
-        for pos in rock_position:
+            Fish(*pos, radius, velocity)
+        for pos in fry_positions:
+            Fry(*pos, 0, velocity)
+        rock_positions = generate_rock_positions(WIDTH, HEIGHT)
+        for pos in rock_positions:
             Rock(*pos)
 
         # Создание игрока
-        Player(WIDTH / 2, HEIGHT / 2, FISH_START_SIZE,velocity)
+        Player(WIDTH / 2, HEIGHT / 2, FISH_START_SIZE, velocity)
 
+        # Запуск таймера и счетчика
+        self.start_counter(duration)
 
     def handle_event(self, event):
         if event.type == pygame.QUIT:
             self.game_over = True
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                pygame.event.post(pygame.event.Event(pygame.QUIT))
+                self.goto_menu = True
+        self.counter.handle_event(event)
 
     def update(self):
         self.all_sprites.update()
@@ -70,22 +91,30 @@ class Game:
             self.score = player.sprites()[0].score
         else:
             self.score = -1
+            self.death_sound.play()
             self.game_over = True
+
         if len(self.fishes) == 1:
+            self.win_sound.play()
             self.game_over = True
+
+        self.counter.update()
 
     def finalize(self):
         for sprite in self.all_sprites:
             sprite.kill()
         self.score = 0
         self.game_over = False
+        self.goto_menu = False
         self.level = None
+        self.counter.reset()
 
     def draw(self, screen):
         screen.fill(LIGHTBLUE)  # Синий фон
         self.all_sprites.draw(screen)
 
         # Отрисовка счета игрока
+        self.counter.draw(screen)
         pygame.display.flip()
 
     def run(self, screen):
@@ -99,6 +128,7 @@ class Game:
 
 if __name__ == "__main__":
     from level_select import LevelSelect
+
     pygame.init()
     mixer.init()
     test_screen = pygame.display.set_mode((WIDTH, HEIGHT))

@@ -11,7 +11,7 @@ class LevelSelect:
         self.selected_level = default
 
     def load_levels(self):
-        with open("levels_data.json", "r", encoding='utf8') as file:
+        with open("data/levels_data.json", "r", encoding='utf8') as file:
             data = json.load(file)
             for level_data in data["levels"]:
                 level = {
@@ -21,6 +21,7 @@ class LevelSelect:
                     "size": level_data["size"],
                     "fry": level_data["fry"],
                     "velocity": level_data["velocity"],
+                    "duration": level_data["duration"],
                     "button": pygame.Rect(WIDTH / 2 - 200,
                                           100 + len(self.levels) * 100,
                                           400, 50)
@@ -36,10 +37,11 @@ class LevelSelect:
                 "fish": level["fish"],
                 "size": level["size"],
                 "fry": level["fry"],
-                "velocity": level["velocity"]
+                "velocity": level["velocity"],
+                "duration": level["duration"]
             }
             data["levels"].append(level_data)
-        with open("levels_data.json", "w", encoding='utf8') as file:
+        with open("data/levels_data.json", "w", encoding='utf8') as file:
             json.dump(data, file, indent=4, ensure_ascii=False)
 
     def handle_event(self, event):

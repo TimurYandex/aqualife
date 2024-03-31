@@ -5,10 +5,10 @@ from pygame.locals import K_UP, K_DOWN, K_LEFT, K_RIGHT
 from pygame.math import Vector2
 from pict import *
 from const import RED, DECELERATION, ACCELERATION, MAX_SPEED, MIN_SPEED, \
-    FRY_START_SIZE
+    FRY_START_SIZE, EAT_FISH_EVENT, LOSE_FRY_EVENT
+
 from sprite_groups import SpriteGroups
 from pygame import mixer
-
 
 groups = SpriteGroups()
 all_sprites, rocks, fishes, player, fries = groups.get_groups()
@@ -120,13 +120,15 @@ class Fish(Ball):
         if small:
             k = 1
             for tasty in sorted(small, key=lambda x: x.length())[:3]:
-                self.greed += k * tasty.normalize()
-                k /= 2
+                if tasty.length() > tasty.epsilon:
+                    self.greed += k * tasty.normalize()
+                    k /= 2
         if big:
             k = 1
             for scare in sorted(big, key=lambda x: x.length())[:3]:
-                self.fear -= k * scare.normalize()
-                k /= 2
+                if scare.length() > scare.epsilon:
+                    self.fear -= k * scare.normalize()
+                    k /= 2
 
     def decelerate(self):
         self.speed /= (
@@ -168,6 +170,9 @@ class Fish(Ball):
         if contacted_fishes:
             for fish in contacted_fishes:
                 if fish != self and self.size >= fish.size:
+                    if fish in fries:
+                        lose_event = pygame.event.Event(LOSE_FRY_EVENT)
+                        pygame.event.post(lose_event)
                     fish.kill()
                     self.size *= 1.1
                     self.score += 1
@@ -195,14 +200,8 @@ class Player(Fish):
         self.draw()
         player.add(self)
         # Звуки
-        self.hit_sound = mixer.Sound("./data/Hit.wav")
-        self.death_sound = mixer.Sound("./data/Death.wav")
-        self.eat_sound = mixer.Sound("./data/AIEat.wav")
-        self.win_sound = mixer.Sound("./data/Win.wav")
-        self.ambient_sound = mixer.Sound("./data/Ambient.wav")
-        self.ambient_channel = mixer.find_channel(True)
-        self.ambient_sound.set_volume(0.3)
-        self.ambient_channel.play(self.ambient_sound, loops=-1)
+        self.hit_sound = mixer.Sound("data/sound/Hit.wav")
+        self.eat_sound = mixer.Sound("data/sound/AIEat.wav")
 
     def behavior(self):
         keys = pygame.key.get_pressed()
@@ -224,6 +223,8 @@ class Player(Fish):
             self.hit_sound.play()
             self.hit_sound_signal = False
         if self.eat_sound_signal:
+            eat_event = pygame.event.Event(EAT_FISH_EVENT)
+            pygame.event.post(eat_event)
             self.eat_sound.play()
             self.eat_sound_signal = False
 
@@ -233,6 +234,7 @@ class Fry(Fish):
         super().__init__(x, y, FRY_START_SIZE, velocity)
         self._color = generate_color("player")
         self.draw()
+        fries.add(self)
 
     pass
 
@@ -250,17 +252,20 @@ class Fry(Fish):
         if small:
             k = 1
             for tasty in sorted(small, key=lambda x: x.length())[:3]:
-                self.greed += k * tasty.normalize()
-                k /= 2
+                if tasty.length() > tasty.epsilon:
+                    self.greed += k * tasty.normalize()
+                    k /= 2
         if big:
             k = 1
             for scare in sorted(big, key=lambda x: x.length())[:3]:
-                self.fear -= k * scare.normalize()
-                k /= 2
+                if scare.length() > scare.epsilon:
+                    self.fear -= k * scare.normalize()
+                    k /= 2
 
     def accelerate(self):
         try:
-            self.speed = self.speed.slerp(2 * self.fear + self.greed, 0.03 * self.velocity)
+            self.speed = self.speed.slerp(2 * self.fear + self.greed,
+                                          0.03 * self.velocity)
         except ValueError:
             self.speed *= 1.01
         ...
@@ -271,7 +276,8 @@ class Fry(Fish):
         # if contacted_fishes:
         #     for fish in contacted_fishes:
         #         if fish != self and self.size < fish.size:
-        #             self.kill()
+        #             lose_event = pygame.event.Event(LOSE_FRY_EVENT)
+        #             pygame.event.post(lose_event)
         ...
 
 
