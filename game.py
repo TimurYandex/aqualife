@@ -64,7 +64,7 @@ class Game:
                                                                     fish_num)
         for pos in fish_positions:
             radius = random.randint(FISH_START_SIZE // 2,
-                                    max_fish_size * FISH_START_SIZE)
+                                    int(max_fish_size * FISH_START_SIZE))
             Fish(*pos, radius, velocity)
         for pos in fry_positions:
             Fry(*pos, 0, velocity)
