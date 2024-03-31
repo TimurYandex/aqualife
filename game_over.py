@@ -6,14 +6,15 @@ class GameOver:
     def __init__(self):
         self.font = pygame.font.Font(None, 36)
         self.score = 0
-        self.restart_button = pygame.Rect(WIDTH/2-100, HEIGHT/2, 200, 50)
+        self.time = 0
+        self.restart_button = pygame.Rect(WIDTH / 2 - 100, HEIGHT / 2, 200, 50)
         self.restart = False
-
-
-
 
     def set_score(self, score):
         self.score = score
+
+    def set_time(self, time):
+        self.time = time
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -22,7 +23,7 @@ class GameOver:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 pygame.event.post(pygame.event.Event(pygame.QUIT))
-            elif event.key == pygame.K_RETURN:
+            elif event.key == pygame.K_SPACE or event.key == pygame.K_RETURN:
                 self.restart = True
 
     def update(self):
@@ -31,17 +32,20 @@ class GameOver:
     def draw(self, screen):
         screen.fill((10, 50, 40))
 
-        game_over_text = self.font.render("Game Over", True, (255, 255, 255))
-        game_over_rect = game_over_text.get_rect(center=(WIDTH/2, HEIGHT/2 - 100))
+        message = "УРОВЕНЬ ПРОЙДЕН"
+        game_over_text = self.font.render(message, True, (255, 255, 255))
+        game_over_rect = game_over_text.get_rect(
+                center=(WIDTH / 2, HEIGHT / 2 - 100))
         screen.blit(game_over_text, game_over_rect)
 
-        score_text = self.font.render(f"Score: {self.score}", True,
-                                      (255, 255, 255))
-        score_rect = score_text.get_rect(center=(WIDTH/2, HEIGHT/2 + 100))
+        score_text = self.font.render(
+                f"Счет: {self.score}      Время: {self.time}",
+                True, (255, 255, 255))
+        score_rect = score_text.get_rect(center=(WIDTH / 2, HEIGHT / 2 + 100))
         screen.blit(score_text, score_rect)
 
         pygame.draw.rect(screen, (255, 255, 255), self.restart_button)
-        restart_text = self.font.render("Restart", True, (0, 0, 0))
+        restart_text = self.font.render("Еще!", True, (0, 0, 0))
         restart_rect = restart_text.get_rect(center=self.restart_button.center)
         screen.blit(restart_text, restart_rect)
 

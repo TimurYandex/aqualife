@@ -18,4 +18,5 @@ class SpriteGroups:
         self.fries = pygame.sprite.Group()
 
     def get_groups(self):
-        return self.all_sprites, self.rocks, self.fishes, self.player,self.fries
+        return self.all_sprites, self.rocks, self.fishes, self.player, \
+            self.fries

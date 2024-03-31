@@ -37,6 +37,10 @@ class LevelSelect:
                 }
                 self.levels.append(level)
 
+    def reset_completed(self):
+        for level in self.levels:
+            level["completed"] = False
+
     def save_levels(self):
         data = {"levels": []}
         for level in self.levels:
@@ -51,7 +55,7 @@ class LevelSelect:
             }
             data["levels"].append(level_data)
         with open("data/levels_data.json", "w", encoding='utf8') as file:
-            json.dump(data, file, indent=4, ensure_ascii=False)
+            json.dump(data, file, indent=2, ensure_ascii=False)
 
     def change_selection(self, s=None):
         if s is not None:
@@ -59,7 +63,6 @@ class LevelSelect:
                 if i == s:
                     if i == 0 or self.levels[i - 1]["completed"]:
                         self._selected = i
-
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:

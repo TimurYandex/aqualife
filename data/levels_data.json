@@ -1,31 +1,31 @@
 {
-    "levels": [
-        {
-            "name": "1: Останься последней рыбкой!",
-            "completed": true,
-            "fish": 20,
-            "size": 1.1,
-            "fry": 0,
-            "velocity": 1,
-            "duration": 120
-        },
-        {
-            "name": "2: Съешь хоть одну и проживи 20 секунд!",
-            "completed": true,
-            "fish": 40,
-            "size": 2,
-            "fry": 0,
-            "velocity": 2,
-            "duration": 20
-        },
-        {
-            "name": "3: Съешь хоть одну и защити мальков 30 секунд!",
-            "completed": false,
-            "fish": 15,
-            "size": 1,
-            "fry": 10,
-            "velocity": 0.5,
-            "duration": 30
-        }
-    ]
+  "levels": [
+    {
+      "name": "1: Останься последней рыбкой!",
+      "completed": false,
+      "fish": 20,
+      "size": 1.1,
+      "fry": 0,
+      "velocity": 1,
+      "duration": 120
+    },
+    {
+      "name": "2: Съешь хоть одну и проживи 20 секунд!",
+      "completed": false,
+      "fish": 30,
+      "size": 1.5,
+      "fry": 0,
+      "velocity": 2,
+      "duration": 20
+    },
+    {
+      "name": "3: Съешь хоть одну и защити мальков 30 секунд!",
+      "completed": false,
+      "fish": 15,
+      "size": 1,
+      "fry": 10,
+      "velocity": 0.5,
+      "duration": 30
+    }
+  ]
 }

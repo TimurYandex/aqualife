@@ -88,22 +88,33 @@ class Game:
 
     def update(self):
         self.all_sprites.update()
-        if len(player) == 1: # игрок жив
+        if len(player) == 1:  # игрок жив
             self.score = player.sprites()[0].score
-            if (len(self.fishes) == 1 # игрок остался совсем один
-                    # или игрок остался только со своими мальками
-                    or len(self.fishes) == len(self.fries) + len(player)):
-                self.win_sound.play()
+            # когда игрок жив, возможны варианты окончания:
+            # 1. время кончилось,
+            # тогда победа при положительном счете, иначе поражение
+            # 2. время еще есть, но он одинок либо с мальками,
+            # тогда победа при положительном счете, иначе поражение
+            if self.counter.is_game_over():
+                if self.score > 0:
+                    self.win_sound.play()
+                else:
+                    self.death_sound.play()
                 self.game_over = True
-            elif self.counter.is_game_over():
-                self.win_sound.play()
+            elif (len(self.fishes) == 1  # игрок остался совсем один
+                  # или игрок остался только со своими мальками
+                  or len(self.fishes) == len(self.fries) + len(player)):
+                if self.score > 0:
+                    self.win_sound.play()
+                else:
+                    self.death_sound.play()
                 self.game_over = True
-
-        else: # игрок съеден
+            else:  # Игра продолжается!
+                self.game_over = False
+        else:  # игрок съеден
             self.score = -100
             self.death_sound.play()
             self.game_over = True
-
         self.counter.update()
 
     def finalize(self):

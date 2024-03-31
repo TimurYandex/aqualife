@@ -85,8 +85,8 @@ def generate_fish_fry_positions(w, h, fry_num, fish_num):
             fish_positions.append((x, y))
     else:
         for _ in range(fish_num):
-            x = random.randint(0, 3*w // 7)
-            y = random.randint(0, 3*h // 7)
+            x = random.randint(0, 3 * w // 7)
+            y = random.randint(0, 3 * h // 7)
             bin_x = random.randint(0, 1) * 4 * w // 7
             bin_y = random.randint(0, 1) * 4 * h // 7
             fish_positions.append((x + bin_x, y + bin_y))

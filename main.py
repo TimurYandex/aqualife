@@ -57,6 +57,7 @@ def main():
             current_screen = main_menu
         elif current_screen == game and game.game_over:
             game_over.set_score(game.score)
+            game_over.set_time(game.counter.get_time())
             if game_over.score > 0:
                 for level in level_select.levels:
                     if level["name"] == level_select.selected_level:
@@ -71,6 +72,9 @@ def main():
 
         pygame.display.flip()
         clock.tick(FPS)
+    # очистка пройденных уровней
+    level_select.reset_completed()
+    level_select.save_levels()
     mixer.quit()
     pygame.quit()
     sys.exit()
