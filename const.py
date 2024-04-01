@@ -5,7 +5,9 @@ EAT_FISH_EVENT = pygame.USEREVENT + 1
 LOSE_FRY_EVENT = pygame.USEREVENT + 2
 
 # Размеры
-WIDTH, HEIGHT = 1400, 1000
+screen = pygame.display.set_mode(flags=pygame.FULLSCREEN)
+WIDTH, HEIGHT = screen.get_size()
+del screen
 FISH_START_SIZE = 40
 FRY_START_SIZE = 20
 
